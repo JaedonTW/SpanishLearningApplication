@@ -31,12 +31,24 @@ void INSERT_SQL(char* spanish, char* english, char* sqlstatement)
 
 int main(int argc, char** argv)
 {
+	sqlite3_stmt* SQLstatement;
+
 	char* spanishWord = malloc(sizeof(char) * MAX_WORD_LENGTH);
 	char* englishWord = malloc(sizeof(char) * MAX_WORD_LENGTH);
 	char* sqlStatement = malloc(sizeof(char) * 200);
 		
 	vocabularyList = fopen("Words.txt","r");
+	
+	sqlite3* dbConnectionObject;
 
+	int status = sqlite3_open("Vocabulary.db",&dbConnectionObject);
+	
+	if(status)
+	{
+		printf("Bad Status: %d\n",status);
+		return EXIT_FAILURE;
+	}
+	
 	while(fgets(spanishWord,MAX_WORD_LENGTH,vocabularyList) != NULL)
 	{	
 		fgets(englishWord,MAX_WORD_LENGTH,vocabularyList);	
@@ -44,17 +56,12 @@ int main(int argc, char** argv)
 		// remove newline character
 		spanishWord[strcspn(spanishWord,"\n")] = 0;
 		englishWord[strcspn(englishWord,"\n")] = 0;
-	
 		INSERT_SQL(spanishWord,englishWord,sqlStatement);
+		
+		sqlite3_prepare_v2(dbConnectionObject,sqlStatement,200,&SQLstatement,NULL);
+		sqlite3_step(SQLstatement);
 	}
-	
-	sqlite3* dbConnectionObject;
-
-	int status = sqlite3_open("Vocabulary.db",&dbConnectionObject);
-	
-	if(status)
-		printf("Bad Status: %d\n",status);
-	
+		
 	free(spanishWord);
 	free(englishWord);
 
