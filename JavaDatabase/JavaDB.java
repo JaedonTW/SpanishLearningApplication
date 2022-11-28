@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.*;
+import java.io.*;
 
 public class DatabaseConnection
 {
@@ -30,17 +31,46 @@ public class DatabaseConnection
 		Connection dbConnection = createDatabaseConnection("jdbc:sqlite:Vocabulary.db");
 		VocabularyList recordList = new VocabularyList();
 		recordList.selectRecords(dbConnection,"SELECT * FROM VERB;");
+
+		// First try/catch block moves cursor to row 1	
+		try
+		{
+			recordList.result.next();
+		}
+
+		catch(SQLException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		for(int i=0; i<100; i++)
+		{
+			try
+			{	
+				System.out.println(recordList.result.getString("ENG_Infinitive"));
+				System.out.println(recordList.result.getString("SPN_Infinitive"));
+				recordList.result.next();
+			}
+
+			catch(SQLException e)
+			{
+				System.out.println(e.getMessage());
+			}
+		}
+	
 	}
 }
 
 public class VocabularyList
 {
+	ResultSet result;
+
 	public void selectRecords(Connection dbConnection, String sqlStatementString)
 	{
 		try
 		{
 			Statement sqlStatementObject = dbConnection.createStatement();
-			ResultSet result = sqlStatementObject.executeQuery(sqlStatementString);
+			result = sqlStatementObject.executeQuery(sqlStatementString);
 		}
 
 		catch(SQLException e)
